@@ -393,8 +393,6 @@
         
           
         
-          
-        
       
     
     
@@ -408,7 +406,7 @@
   
     
     <h2 class="article-title" >
-      <a href="/2021/01/20/123/">
+      <a href="/2021/01/20/redis/">
         Jan 20, 2021
       </a>
     </h2>
@@ -416,9 +414,9 @@
   <div class='md'>
     
       
-        
-
-
+        redis面试题
+Redis持久化机制Redis是一个支持持久化的内存数据库，通过持久化机制把内存中的数据同步到硬盘文件来保证数据持久化。当Redis重启后通过把硬盘文件重新加载到内存，就能达到恢复数据的目的。
+实现:单独创建fork()一个子进程，将当前父进程的数据库数据复制到子进程的内存中，然后由子进程写入到临时文件中，持久化的过程结束了，再用这个临时文件替换上次的快照文件，然后子进程退...
       
     
   </div>
@@ -431,51 +429,7 @@
       </div>
       
         <div>
-          <a class='readmore' href='/2021/01/20/123/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2020/11/29/hello-world/">
-        Hello World
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Qu...
-      
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2020-11-29</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2020/11/29/hello-world/'>
+          <a class='readmore' href='/2021/01/20/redis/'>
             Read More
           </a>
         </div>
