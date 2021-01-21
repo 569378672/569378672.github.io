@@ -5,8 +5,6 @@
   <!-- SEO相关 -->
   
     
-      <meta name="robots" content="noindex,follow">
-    
   
   <!-- 渲染优化 -->
   <meta http-equiv='x-dns-prefetch-control' content='on' />
@@ -21,7 +19,7 @@
 
   <!-- 页面元数据 -->
   
-  <title>Archive: 2021/1 - 刘昶的博客</title>
+  <title>刘昶的博客</title>
   
 
   
@@ -56,7 +54,7 @@
 <body>
   
 
-<header id="l_header" class="l_header auto shadow blur " style='opacity: 0' >
+<header id="l_header" class="l_header auto shadow blur show" style='opacity: 0' >
   <div class='container'>
   <div id='wrapper'>
     <div class='nav-sub'>
@@ -307,7 +305,7 @@
     <div id="l_cover">
   
     
-        <div id="half" class='cover-wrapper  dock' style="display: ;">
+        <div id="full" class='cover-wrapper post dock' style="display: none;">
           
             <div class='cover-bg lazyload placeholder' data-bg="https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/033.jpg"></div>
           
@@ -383,218 +381,191 @@
         
 
 <div class='l_main'>
-	
-		
-  <section class="post-list">
-    
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-    
-    
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
   
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis4/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        Redis单线程与多线程
-1.Reactor模式1.1传统阻塞IO模型在传统阻塞IO模型中，由一个独立的 Acceptor 线程来监听客户端的连接，每当有客户端请求过来时，它就会为客户端分配一个新的线程来进行处理。当同时有多个请求过来，服务端对应的就会分配相应数量的线程。这就会导致CPU频繁切换，浪费资源。
 
-有的连接请求过来不做任何事情，但服务端还会分配对应的线程，这样就会造成不必要的线程...
-      
+
+  
+  <div class="article-meta" id="top">
+    
+    
     
   </div>
+
+
   
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
+  <h1 id="缓存穿透，缓存击穿，缓存雪崩解决方案"><a href="#缓存穿透，缓存击穿，缓存雪崩解决方案" class="headerlink" title="缓存穿透，缓存击穿，缓存雪崩解决方案"></a><strong>缓存穿透，缓存击穿，缓存雪崩解决方案</strong></h1><h2 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a><strong>缓存穿透</strong></h2><p>缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层查询，失去缓存的意义。当流量大时，DB直接挂掉，有人用不存在的key频繁攻击，就会出现bug。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a><strong>解决方案</strong></h3><p>有很多方法可以有效解决缓存穿透问题，最常见的则是采用布隆过滤器，将所有可能存在的数据哈希到一个足够大的bitmap中，一个一定不存在的数据会被这个bitmap拦截，避免对底层存储系统的压力。</p>
+<p>还有一个更简单粗暴的方法，如果一个查询返回的数据为空（不管是数据不存在，还是系统故障），我们仍然把这个空结果进行缓存，但它的过期时间会很短，最长不超过五分钟。</p>
+<h2 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h2><p>缓存雪崩是指在我们设置缓存时采用了相同的过期时间，导致缓存在某一时刻同时失效，请求全部转发到DB，DB瞬时压力过重雪崩。</p>
+<h3 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a><strong>解决方案</strong></h3><p>缓存失效时的雪崩效应对底层系统的冲击非常可怕。大多数系统设计者考虑用锁或者队列的方式保证缓存的单线（进程）写，从而避免失效时大量的并发请求落到底层存储系统上。</p>
+<p>还可以将缓存失效时间分散开，例如在原有的失效时间基础上增加一个随机值，这样每一个缓存的过期时间的重复率就会降低，就很难引发集体失效的事件。</p>
+<h2 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a><strong>缓存击穿</strong></h2><p>对于一些设置了过期时间的key，如果这些key可能会在某些时间点被超高并发地访问，是一种非常“热点”的数据。这个时候，需要考虑一个问题：缓存被“击穿”的问题，这个和缓存雪崩的区别在于这里针对某一个key缓存，前者是很多key。</p>
+<p>缓存在某个时间点过期的时候，恰好在这个时间点对这个key有大量的并发请求过来，这些请求发现缓存过期一般都会从后端DB加载数据并回设到缓存，这个时候大量的并发请求可能会瞬间把后端DB压垮。</p>
+<h3 id="解决方案-2"><a href="#解决方案-2" class="headerlink" title="解决方案"></a><strong>解决方案</strong></h3><h4 id="（1）使用互斥锁（mutex-key）"><a href="#（1）使用互斥锁（mutex-key）" class="headerlink" title="（1）使用互斥锁（mutex key）"></a><strong>（1）使用互斥锁（mutex key）</strong></h4><p>业界比较常用的做法是使用mutex。简单地说，在缓存失效的时候（判断拿出来的值为空），不是立刻去load db，而是先使用缓存工具的某些带成功操作返回值的操作（例如redis的SETTNX或者Memcache的ADD）去set一个mutex key，当操作返回成功时，再进行load db的操作回设缓存，否则，就重试整个get缓存的方法。</p>
+<p>SETNX，是「SET if Not eXists」的缩写，也就是只有不存在的时候才设置，可以利用它来实现锁的效果。在redis2.6.1之前版本未实现setnx的过期时间。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard11.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard11.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard13.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard13.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>memcache代码：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard15.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard15.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h4 id="（2）提前使用互斥锁（mutex-key）"><a href="#（2）提前使用互斥锁（mutex-key）" class="headerlink" title="（2）提前使用互斥锁（mutex key）"></a><strong>（2）提前使用互斥锁（mutex key）</strong></h4><p>在value内部设置1个超时值(timeout1), timeout1比实际的memcache timeout(timeout2)小。</p>
+<p>当从cache读取到timeout1发现它已经过期时候，马上延长timeout1并重新设置到cache。然后再从数据库加载数据并设置到cache中。</p>
+<p>伪代码如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard14.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard14.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h4 id="（3）永远不过期"><a href="#（3）永远不过期" class="headerlink" title="（3）永远不过期"></a><strong>（3）永远不过期</strong></h4><p>这里的“永远不过期”包含两层意思：</p>
+<p>（1）从redis看，确实没设置过期时间，这就保证了，不会出现热点key过期问题，也就是“物理”不过期。</p>
+<p>（2）从功能上看，如果不过期，数据就会成为静态？可以把过期时间存在key对应的value里，如果发现要过期了，通过后台的异步线程进行缓存的构建，也就是“逻辑”过期。</p>
+<p>从实战看，这种方法对于性能非常友好，唯一不足的就是构建缓存时候，其余线程（非构建缓存的线程）可能访问的是老数据。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard17.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard17.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h4 id="（4）资源保护"><a href="#（4）资源保护" class="headerlink" title="（4）资源保护"></a><strong>（4）资源保护</strong></h4><p>采用netflix和hystrix，可以做资源的隔离保护主线程池。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard16.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard16.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>针对业务系统，永远都是具体情况具体分析，没有最好只有最合适。</p>
+<p>最后，对于缓存系统常见的缓存满了和数据丢失问题，需要根据具体业务分析，通常采用LRU策略处理溢出，redis的RDB和AOF持久化策略来保证一定情况下的数据安全。</p>
+
+  
+  
+    
+    <div class='footer'>
       
-        <div>
-          <a class='readmore' href='/2021/01/21/redis4/'>
-            Read More
-          </a>
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
+              
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+              
+            
+              
+                <p>本文永久链接是：<a href=http://example.com/2021/01/21/redis3/>http://example.com/2021/01/21/redis3/</a></p>
+              
+            
+          </blockquote>
         </div>
+      
       
     </div>
   
+  
+    
 
+
+  <div class='article-meta' id="bottom">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-01-21T11:01:10+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Jan 21, 2021</p>
+  </a>
 </div>
 
-          </div>
         
       
         
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis3/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
+          
+
+        
+      
+        
+          
+  <div class="new-meta-item share -mob-share-list">
+  <div class="-mob-share-list share-body">
     
       
-        缓存穿透，缓存击穿，缓存雪崩解决方案缓存穿透缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层查询，失去缓存的意义。当流量大时，DB直接挂掉，有人用不存在的key频繁攻击，就会出现bug。
-解决方案有很多方法可以有效解决缓存穿透问题，最常见的则是采用布隆过滤器，将所有可能存在的数据...
+        <a class="-mob-share-qq" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://example.com/2021/01/21/redis3/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qq.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qq.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-qzone" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://example.com/2021/01/21/redis3/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qzone.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qzone.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-weibo" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="http://service.weibo.com/share/share.php?url=http://example.com/2021/01/21/redis3/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/weibo.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/weibo.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+    
       
     
   </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/21/redis3/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
 </div>
 
-          </div>
+
+
         
       
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
+    </div>
+  </div>
+
+
   
   
+
   
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis2/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
+    <div class="prev-next">
       
-        Redis
+        <a class='prev' href='/2021/01/21/redis4/'>
+          <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i></p>
+          <p class='content'>Redis单线程与多线程
+1.Reactor模式1.1传统阻塞IO模型在传统阻塞IO模型中，由一个独立的 Acceptor 线程来监听客户端的连接，每当有客户端请求过来时，它就会为客户端分配一个...</p>
+        </a>
+      
+      
+        <a class='next' href='/2021/01/21/redis2/'>
+          <p class='title'><i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>Redis
 1.基于内存实现redis是基于内存的数据库，与磁盘数据库相比，redis的读取不会受到磁盘I/O的限制。
-2.高效的数据结构redis中有多种数据类型，每种数据类型的底层都有一种或多种数据结构支持。
-
-2.1简单动态字符串(SDS)(1)字符串长度处理
-获取字符串长度不需要遍历整个字符串。
-
-(2)内存重新分配
-C语言涉及到修改字符串的时候会重新分配内存。修改越频繁，内存分配越...
-      
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/21/redis2/'>
-            Read More
-          </a>
-        </div>
+2.高效的数据结构redis中有多种数据类型，每种数据类型的底层都有一种或...</p>
+        </a>
       
     </div>
   
+</article>
 
+
+  
+
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
 </div>
 
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/20/redis1/">
-        Jan 20, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        redis面试题
-Redis持久化机制Redis是一个支持持久化的内存数据库，通过持久化机制把内存中的数据同步到硬盘文件来保证数据持久化。当Redis重启后通过把硬盘文件重新加载到内存，就能达到恢复数据的目的。
-实现:单独创建fork()一个子进程，将当前父进程的数据库数据复制到子进程的内存中，然后由子进程写入到临时文件中，持久化的过程结束了，再用这个临时文件替换上次的快照文件，然后子进程退...
-      
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-20</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/20/redis1/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-    
-  </section>
-  
-    
-  
+  </article>
 
 
-	
+
+
+
+
 </div>
 <aside class='l_side'>
   
@@ -602,87 +573,28 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
     
     
 
-<section class="widget blogger shadow desktop mobile">
-  <div class='content'>
-    
-      
-        <a class='avatar flat-box rectangle' href='/about/'>
-          <img no-lazy src='https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/blog/Logo-NavBar@3x.png'/>
-        </a>
-      
-    
-    
-      <div class='text'>
-        
-        
-        
-          <p><span id="jinrishici-sentence">刘昶的博客</span></p>
-          <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
-        
-      </div>
-    
-    
-      <div class="social-wrapper">
-        
-          
-            <a href="/atom.xml"
-              class="social fas fa-rss flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="mailto:me@xxx.com"
-              class="social fas fa-envelope flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="https://github.com/volantis-x/"
-              class="social fab fa-github flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="/"
-              class="social fas fa-headphones-alt flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-      </div>
-    
-  </div>
-</section>
 
-  
 
-  
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
     
+  <header>
     
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
 
-  
 
-  
-    
-    
+    <div class='content'>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="toc-text">缓存穿透</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">解决方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="toc-text">缓存雪崩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-1"><span class="toc-text">解决方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF"><span class="toc-text">缓存击穿</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88-2"><span class="toc-text">解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E4%BD%BF%E7%94%A8%E4%BA%92%E6%96%A5%E9%94%81%EF%BC%88mutex-key%EF%BC%89"><span class="toc-text">（1）使用互斥锁（mutex key）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E6%8F%90%E5%89%8D%E4%BD%BF%E7%94%A8%E4%BA%92%E6%96%A5%E9%94%81%EF%BC%88mutex-key%EF%BC%89"><span class="toc-text">（2）提前使用互斥锁（mutex key）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E6%B0%B8%E8%BF%9C%E4%B8%8D%E8%BF%87%E6%9C%9F"><span class="toc-text">（3）永远不过期</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E8%B5%84%E6%BA%90%E4%BF%9D%E6%8A%A4"><span class="toc-text">（4）资源保护</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+    </div>
+  </section>
 
-  
 
   
 
 
 </aside>
+
 
 
         
@@ -699,7 +611,7 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
 
   var l_header=document.getElementById("l_header");
   
-  l_header.classList.remove("show");
+  l_header.classList.add("show");
   
 </script>
 

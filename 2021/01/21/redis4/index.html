@@ -5,8 +5,6 @@
   <!-- SEO相关 -->
   
     
-      <meta name="robots" content="noindex,follow">
-    
   
   <!-- 渲染优化 -->
   <meta http-equiv='x-dns-prefetch-control' content='on' />
@@ -21,7 +19,7 @@
 
   <!-- 页面元数据 -->
   
-  <title>Archive: 2021/1 - 刘昶的博客</title>
+  <title>刘昶的博客</title>
   
 
   
@@ -56,7 +54,7 @@
 <body>
   
 
-<header id="l_header" class="l_header auto shadow blur " style='opacity: 0' >
+<header id="l_header" class="l_header auto shadow blur show" style='opacity: 0' >
   <div class='container'>
   <div id='wrapper'>
     <div class='nav-sub'>
@@ -307,7 +305,7 @@
     <div id="l_cover">
   
     
-        <div id="half" class='cover-wrapper  dock' style="display: ;">
+        <div id="full" class='cover-wrapper post dock' style="display: none;">
           
             <div class='cover-bg lazyload placeholder' data-bg="https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/033.jpg"></div>
           
@@ -383,218 +381,184 @@
         
 
 <div class='l_main'>
-	
-		
-  <section class="post-list">
-    
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-    
-    
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
   
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis4/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        Redis单线程与多线程
-1.Reactor模式1.1传统阻塞IO模型在传统阻塞IO模型中，由一个独立的 Acceptor 线程来监听客户端的连接，每当有客户端请求过来时，它就会为客户端分配一个新的线程来进行处理。当同时有多个请求过来，服务端对应的就会分配相应数量的线程。这就会导致CPU频繁切换，浪费资源。
 
-有的连接请求过来不做任何事情，但服务端还会分配对应的线程，这样就会造成不必要的线程...
-      
+
+  
+  <div class="article-meta" id="top">
+    
+    
     
   </div>
+
+
   
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
+  <h1 id="Redis单线程与多线程"><a href="#Redis单线程与多线程" class="headerlink" title="Redis单线程与多线程"></a><strong>Redis单线程与多线程</strong></h1><p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard18.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard18.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h2 id="1-Reactor模式"><a href="#1-Reactor模式" class="headerlink" title="1.Reactor模式"></a><strong>1.Reactor模式</strong></h2><h3 id="1-1传统阻塞IO模型"><a href="#1-1传统阻塞IO模型" class="headerlink" title="1.1传统阻塞IO模型"></a><strong>1.1传统阻塞IO模型</strong></h3><p>在传统阻塞IO模型中，由一个独立的 Acceptor 线程来监听客户端的连接，每当有客户端请求过来时，它就会为客户端分配一个新的线程来进行处理。当同时有多个请求过来，服务端对应的就会分配相应数量的线程。这就会导致CPU频繁切换，浪费资源。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard19.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard19.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>有的连接请求过来不做任何事情，但服务端还会分配对应的线程，这样就会造成不必要的线程开销。这就好比你去餐厅吃饭，你拿着菜单看了半天发现真他娘的贵，然后你就走人了。这段时间等你点菜的服务员就相当于一个对应的线程，你要点菜可以看作一个连接请求。同时，每次建立连接后，当线程调用读写方法时，线程会被阻塞，直到有数据可读可写， 在此期间线程不能做其它事情。还是餐厅吃饭的例子，你出去转了一圈发现还是这家性价比最高。回到这家餐厅又拿着菜单看了半天，服务员也在旁边等你点完菜为止。这个过程中服务员什么也不能做，只能这么干等着，这个过程相当于阻塞。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard20.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard20.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h3 id="1-2伪异步IO模型"><a href="#1-2伪异步IO模型" class="headerlink" title="1.2伪异步IO模型"></a><strong>1.2伪异步IO模型</strong></h3><p>通过线程池优化解决，采用线程池和任务队列的方式，称为伪异步IO模型</p>
+<p>当有客户端接入时，将客户端的请求封装成一个 task 投递到后端线程池中来处理。线程池维护一个消息队列和多个活跃线程，对消息队列中的任务进行处理。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard21.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard21.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>这种解决方案，避免了为每个请求创建一个线程导致的线程资源耗尽问题。但是底层仍然是同步阻塞模型。如果线程池内的所有线程都阻塞了，那么对于更多请求就无法响应了。因此这种模式会限制最大连接数，并不能从根本上解决问题。</p>
+<p>我们继续用上边的餐厅来举例，餐厅老板在经营了一段时间后，顾客多了起来，原本店里的5个服务员一对一服务的话根本对付不过来。于是老板采用5个人线程池的方式。服务员服务完一个客人后立刻去服务另一个。这时问题出现了，有的客人点菜特别慢，服务员就得等待很长时间，直到客人点完为止。如果5个客人都点的特别慢的话，这5个服务员就得一直等下去，就会导致其余的顾客没有人服务的状态。这就是我们上边所说的线程池所有线程都被阻塞的情况。</p>
+<h3 id="1-3Reactor设计模式"><a href="#1-3Reactor设计模式" class="headerlink" title="1.3Reactor设计模式"></a><strong>1.3Reactor设计模式</strong></h3><p>Reactor 模式的基本设计思想是基于I/O复用模型来实现的。</p>
+<p>这里说下I/O复用模型。和传统IO多线程阻塞不同，I/O复用模型中多个连接共用一个阻塞对象，应用程序只需要在一个阻塞对象等待。当某个连接有新的数据可以处理时，操作系统通知应用程序，线程从阻塞状态返回，开始进行业务处理。什么意思呢？餐厅老板也发现了顾客点餐慢的问题，于是他采用了一种大胆的方式，只留了一个服务员。当客人点餐的时候，这个服务员就去招待别的客人，客人点好餐后直接喊服务员来进行服务。这里的顾客和服务员可以分别看作多个连接和一个线程。服务员阻塞在一个顾客那里，当有别的顾客点好餐后，她就立刻去服务其他的顾客。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard22.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard22.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>Reactor 通过 I/O复用程序监控客户端请求事件，收到事件后通过任务分派器进行分发。针对建立连接请求事件，通过 Acceptor 处理，并建立对应的 handler 负责后续业务处理。针对非连接事件，Reactor 会调用对应的 handler 完成 read-&gt;业务处理-&gt;write 处理流程，并将结果返回给客户端。整个过程都在一个线程里完成。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard23.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard23.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h2 id="2-单线程时代"><a href="#2-单线程时代" class="headerlink" title="2.单线程时代"></a><strong>2.单线程时代</strong></h2><p>Redis是基于Reactor单线程模式实现的。IO多路复用程序接收到用户的请求后，全部推送到一个队列里，交给文件分派器。对于后续的操作，和在 reactor 单线程实现方案里看到的一样，整个过程都在一个线程里完成，因此 Redis 被称为是单线程的操作。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard24.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard24.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>对于单线程的 Redis 来说，基于内存，且命令操作时间复杂度低，因此读写速率是非常快的</p>
+<h2 id="3-多线程时代"><a href="#3-多线程时代" class="headerlink" title="3.多线程时代"></a><strong>3.多线程时代</strong></h2><p>Redis6版本中引入了多线程。Redis单线程处理有着很快的速度，为什么要引入多线程？单线程的瓶颈在哪？</p>
+<p>在Redis中，单线程的性能瓶颈主要在网络IO操作上。也就是在读写网络read/write系统调用执行期间会占用大部分的CPU时间。如果对一些大的键值对进行删除操作，短时间内删不完，对于单线程来说会阻塞后面的操作。</p>
+<p>针对非连接事件，Reactor 会调用对应的 handler 完成 read-&gt;业务处理-&gt;write 处理流程，也就是说这一步会造成性能上的瓶颈。</p>
+<p>Redis 在设计上采用将网络数据读写和协议解析通过多线程的方式来处理，对于命令执行来说，仍然使用单线程操作。</p>
+<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4.总结"></a><strong>4.总结</strong></h2><h3 id="Reactor模式"><a href="#Reactor模式" class="headerlink" title="Reactor模式"></a><strong>Reactor模式</strong></h3><p>传统阻塞IO模型：客户端与服务器端线程1:1分配，不利于进行扩展。</p>
+<p>伪异步IO模型：采用线程池方式，但是底层仍然使用同步阻塞方式，限制了最大连接数。</p>
+<p>Reactor通过I/O复用程序监控客户端请求事件，通过任务分发器进行分发。</p>
+<h3 id="单线程时代"><a href="#单线程时代" class="headerlink" title="单线程时代"></a><strong>单线程时代</strong></h3><p>基于 Reactor 单线程模式实现，通过IO多路复用程序接收到用户的请求后，全部推送到一个队列里，交给文件分派器进行处理。</p>
+<h3 id="多线程时代"><a href="#多线程时代" class="headerlink" title="多线程时代"></a><strong>多线程时代</strong></h3><p>单线程性能瓶颈主要在网络IO上。</p>
+<p>将网络数据读写和协议解析通过多线程的方式来处理，对于命令执行来说，仍然使用单线程操作。</p>
+
+  
+  
+    
+    <div class='footer'>
       
-        <div>
-          <a class='readmore' href='/2021/01/21/redis4/'>
-            Read More
-          </a>
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
+              
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+              
+            
+              
+                <p>本文永久链接是：<a href=http://example.com/2021/01/21/redis4/>http://example.com/2021/01/21/redis4/</a></p>
+              
+            
+          </blockquote>
         </div>
+      
       
     </div>
   
+  
+    
 
+
+  <div class='article-meta' id="bottom">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-01-21T11:02:49+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Jan 21, 2021</p>
+  </a>
 </div>
 
-          </div>
         
       
         
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis3/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
+          
+
+        
+      
+        
+          
+  <div class="new-meta-item share -mob-share-list">
+  <div class="-mob-share-list share-body">
     
       
-        缓存穿透，缓存击穿，缓存雪崩解决方案缓存穿透缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层查询，失去缓存的意义。当流量大时，DB直接挂掉，有人用不存在的key频繁攻击，就会出现bug。
-解决方案有很多方法可以有效解决缓存穿透问题，最常见的则是采用布隆过滤器，将所有可能存在的数据...
+        <a class="-mob-share-qq" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://example.com/2021/01/21/redis4/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qq.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qq.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-qzone" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://example.com/2021/01/21/redis4/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qzone.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qzone.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-weibo" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="http://service.weibo.com/share/share.php?url=http://example.com/2021/01/21/redis4/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/weibo.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/weibo.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+    
       
     
   </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/21/redis3/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
 </div>
 
-          </div>
+
+
         
       
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis2/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        Redis
-1.基于内存实现redis是基于内存的数据库，与磁盘数据库相比，redis的读取不会受到磁盘I/O的限制。
-2.高效的数据结构redis中有多种数据类型，每种数据类型的底层都有一种或多种数据结构支持。
-
-2.1简单动态字符串(SDS)(1)字符串长度处理
-获取字符串长度不需要遍历整个字符串。
-
-(2)内存重新分配
-C语言涉及到修改字符串的时候会重新分配内存。修改越频繁，内存分配越...
-      
-    
+    </div>
   </div>
+
+
   
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
+  
+
+  
+    <div class="prev-next">
       
-        <div>
-          <a class='readmore' href='/2021/01/21/redis2/'>
-            Read More
-          </a>
-        </div>
+      
+        <a class='next' href='/2021/01/21/redis3/'>
+          <p class='title'><i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>缓存穿透，缓存击穿，缓存雪崩解决方案缓存穿透缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求...</p>
+        </a>
       
     </div>
   
+</article>
 
+
+  
+
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
 </div>
 
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/20/redis1/">
-        Jan 20, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        redis面试题
-Redis持久化机制Redis是一个支持持久化的内存数据库，通过持久化机制把内存中的数据同步到硬盘文件来保证数据持久化。当Redis重启后通过把硬盘文件重新加载到内存，就能达到恢复数据的目的。
-实现:单独创建fork()一个子进程，将当前父进程的数据库数据复制到子进程的内存中，然后由子进程写入到临时文件中，持久化的过程结束了，再用这个临时文件替换上次的快照文件，然后子进程退...
-      
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-20</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/20/redis1/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-    
-  </section>
-  
-    
-  
+  </article>
 
 
-	
+
+
+
+
 </div>
 <aside class='l_side'>
   
@@ -602,87 +566,28 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
     
     
 
-<section class="widget blogger shadow desktop mobile">
-  <div class='content'>
-    
-      
-        <a class='avatar flat-box rectangle' href='/about/'>
-          <img no-lazy src='https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/blog/Logo-NavBar@3x.png'/>
-        </a>
-      
-    
-    
-      <div class='text'>
-        
-        
-        
-          <p><span id="jinrishici-sentence">刘昶的博客</span></p>
-          <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
-        
-      </div>
-    
-    
-      <div class="social-wrapper">
-        
-          
-            <a href="/atom.xml"
-              class="social fas fa-rss flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="mailto:me@xxx.com"
-              class="social fas fa-envelope flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="https://github.com/volantis-x/"
-              class="social fab fa-github flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="/"
-              class="social fas fa-headphones-alt flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-      </div>
-    
-  </div>
-</section>
 
-  
 
-  
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
     
+  <header>
     
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
 
-  
 
-  
-    
-    
+    <div class='content'>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Reactor%E6%A8%A1%E5%BC%8F"><span class="toc-text">1.Reactor模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1%E4%BC%A0%E7%BB%9F%E9%98%BB%E5%A1%9EIO%E6%A8%A1%E5%9E%8B"><span class="toc-text">1.1传统阻塞IO模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2%E4%BC%AA%E5%BC%82%E6%AD%A5IO%E6%A8%A1%E5%9E%8B"><span class="toc-text">1.2伪异步IO模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3Reactor%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-text">1.3Reactor设计模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%97%B6%E4%BB%A3"><span class="toc-text">2.单线程时代</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%97%B6%E4%BB%A3"><span class="toc-text">3.多线程时代</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%80%BB%E7%BB%93"><span class="toc-text">4.总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Reactor%E6%A8%A1%E5%BC%8F"><span class="toc-text">Reactor模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%97%B6%E4%BB%A3"><span class="toc-text">单线程时代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%97%B6%E4%BB%A3"><span class="toc-text">多线程时代</span></a></li></ol></li></ol>
+    </div>
+  </section>
 
-  
 
   
 
 
 </aside>
+
 
 
         
@@ -699,7 +604,7 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
 
   var l_header=document.getElementById("l_header");
   
-  l_header.classList.remove("show");
+  l_header.classList.add("show");
   
 </script>
 

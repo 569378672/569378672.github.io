@@ -5,8 +5,6 @@
   <!-- SEO相关 -->
   
     
-      <meta name="robots" content="noindex,follow">
-    
   
   <!-- 渲染优化 -->
   <meta http-equiv='x-dns-prefetch-control' content='on' />
@@ -21,7 +19,7 @@
 
   <!-- 页面元数据 -->
   
-  <title>Archive: 2021/1 - 刘昶的博客</title>
+  <title>刘昶的博客</title>
   
 
   
@@ -56,7 +54,7 @@
 <body>
   
 
-<header id="l_header" class="l_header auto shadow blur " style='opacity: 0' >
+<header id="l_header" class="l_header auto shadow blur show" style='opacity: 0' >
   <div class='container'>
   <div id='wrapper'>
     <div class='nav-sub'>
@@ -307,7 +305,7 @@
     <div id="l_cover">
   
     
-        <div id="half" class='cover-wrapper  dock' style="display: ;">
+        <div id="full" class='cover-wrapper post dock' style="display: none;">
           
             <div class='cover-bg lazyload placeholder' data-bg="https://cdn.jsdelivr.net/gh/volantis-x/cdn-wallpaper-minimalist/2020/033.jpg"></div>
           
@@ -383,218 +381,222 @@
         
 
 <div class='l_main'>
-	
-		
-  <section class="post-list">
-    
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-    
-    
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
+  <article class="article post white-box reveal md shadow article-type-post" id="post" itemscope itemprop="blogPost">
   
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis4/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        Redis单线程与多线程
-1.Reactor模式1.1传统阻塞IO模型在传统阻塞IO模型中，由一个独立的 Acceptor 线程来监听客户端的连接，每当有客户端请求过来时，它就会为客户端分配一个新的线程来进行处理。当同时有多个请求过来，服务端对应的就会分配相应数量的线程。这就会导致CPU频繁切换，浪费资源。
 
-有的连接请求过来不做任何事情，但服务端还会分配对应的线程，这样就会造成不必要的线程...
-      
+
+  
+  <div class="article-meta" id="top">
+    
+    
     
   </div>
+
+
   
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
+  <h1 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h1><p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h2 id="1-基于内存实现"><a href="#1-基于内存实现" class="headerlink" title="1.基于内存实现"></a><strong>1.基于内存实现</strong></h2><p>redis是基于内存的数据库，与磁盘数据库相比，redis的读取不会受到磁盘I/O的限制。</p>
+<h2 id="2-高效的数据结构"><a href="#2-高效的数据结构" class="headerlink" title="2.高效的数据结构"></a><strong>2.高效的数据结构</strong></h2><p>redis中有多种数据类型，每种数据类型的底层都有一种或多种数据结构支持。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard2.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard2.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h3 id="2-1简单动态字符串-SDS"><a href="#2-1简单动态字符串-SDS" class="headerlink" title="2.1简单动态字符串(SDS)"></a><strong>2.1简单动态字符串(SDS)</strong></h3><p><strong>(1)字符串长度处理</strong></p>
+<p>获取字符串长度不需要遍历整个字符串。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard3.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard3.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p><strong>(2)内存重新分配</strong></p>
+<p>C语言涉及到修改字符串的时候会重新分配内存。修改越频繁，内存分配越频繁，降低性能。</p>
+<p>redis中涉及到字符串频繁的修改操作，SDS实现两种优化策略:<strong>空间预分配</strong>和<strong>惰性空间释放</strong>。</p>
+<p><strong>空间预分配</strong></p>
+<p>对SDS修改及空间扩充时，除了分配所必需的空间外，还会额外分配未使用的空间。具体分配规则：SDS修改后，len长度小于1M，那么将会额外分配与len相同长度的未使用空间。如果大于1M,那么将分配1M的使用空间。</p>
+<p><strong>惰性空间释放</strong></p>
+<p>SDS缩短时，并不会回收多余的内存空间，而是使用free字段将多出的空间记录下来。如果后续有变更操作，直接使用free中记录的空间，减少内存的分配。</p>
+<p><strong>(3)二进制安全</strong></p>
+<p>redis中同样会存储二进制数据，但二进制数据并不是规则的字符串格式，可能会包含一些特殊的字符，例如‘\0’等。C中字符串遇到’\0’会结束，那’\0’之后的数据就读取不上。但在SDS中，是根据len长度来判断字符串是否结束。</p>
+<h3 id="2-2双端链表"><a href="#2-2双端链表" class="headerlink" title="2.2双端链表"></a><strong>2.2双端链表</strong></h3><p>列表List更多是被当作队列或栈来使用。队列和栈的特性一个先进先出，一个先进后出。双端列表很好的支持这些特性。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard4.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard4.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p><strong>(1)前后节点</strong></p>
+<p>链表里每个节点都带有两个指针，prev 指向前节点，next 指向后节点。这样在时间复杂度为 O(1) 内就能获取到前后节点。</p>
+<p><strong>(2)头尾节点</strong></p>
+<p>头节点里有 head 和 tail 两个参数，分别指向头节点和尾节点。这样的设计能够对双端节点的处理时间复杂度降至 O(1) ，对于队列和栈来说再适合不过。同时链表迭代时从两端都可以进行。</p>
+<p><strong>(3)链表长度</strong></p>
+<p>头节点里同时还有一个参数 len，和上边提到的 SDS 里类似，这里是用来记录链表长度的。因此获取链表长度时不用再遍历整个链表，直接拿到 len 值就可以了，这个时间复杂度是 O(1)。</p>
+<h3 id="2-3压缩列表"><a href="#2-3压缩列表" class="headerlink" title="2.3压缩列表"></a><strong>2.3压缩列表</strong></h3><p>双端链表我们已经熟悉了。不知道你有没有注意到一个问题：如果在一个链表节点中存储一个小数据，比如一个字节。那么对应的就要保存头节点，前后指针等额外的数据。这样就浪费了空间，同时由于反复申请与释放也容易导致内存碎片化。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard5.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard5.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>它是经过特殊编码，专门为了提升内存使用效率设计的。所有的操作都是通过指针与解码出来的偏移量进行的。并且压缩列表的内存是连续分配的，遍历的速度很快。</p>
+<h3 id="2-4字典"><a href="#2-4字典" class="headerlink" title="2.4字典"></a><strong>2.4字典</strong></h3><p>redis 作为 K-V 型数据库，所有的键值都是用字典来存储的。</p>
+<p>字典又称为哈希表，哈希表的特性大家都很清楚，能够在 O(1) 时间复杂度内取出和插入关联的值。</p>
+<p><strong>2.5跳跃表</strong></p>
+<p>作为redis中特有的数据结构-跳跃表，其在链表的基础上增加了多级索引来提升查找效率。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard6.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard6.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>这是跳跃表的简单原理图，每一层都有一条有序的链表，最底层的链表包含了所有的元素。这样跳跃表就可以支持在 O(logN) 的时间复杂度里查找到对应的节点。</p>
+<p>下面这张是跳表真实的存储结构，和其他数据结构一样，都在头节点里记录了相应的信息，减少了一些不必要的系统开销。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard7.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard7.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h2 id="3-合理的数据编码"><a href="#3-合理的数据编码" class="headerlink" title="3.合理的数据编码"></a><strong>3.合理的数据编码</strong></h2><p>对于每一种数据类型来说，底层的支持可能是多种数据结构，什么时候使用哪种数据结构，就涉及到了编码转化的问题。</p>
+<p><strong>String</strong>：存储数字的话，采用int类型的编码，如果是非数字的话，采用raw编码。</p>
+<p><strong>List</strong>：字符串长度及元素个数小于一定范围使用ziplist编码，任意条件不满足，则转化为linkedlist编码。</p>
+<p><strong>Hash</strong>：hash对象保存的键值对内的键和值字符串长度小于一定值及键值对。</p>
+<p><strong>Set</strong>：保存元素为整数及元素个数小于一定范围使用intset编码，任意条件不满足，则使用hashtable编码。</p>
+<p><strong>Zset</strong>：zset对象中保存的元素个数小于及成员长度小于一定值使用zlplist编码，任意条件不满足，则使用skiplist编码。</p>
+<h2 id="4-合适的线程模型"><a href="#4-合适的线程模型" class="headerlink" title="4.合适的线程模型"></a><strong>4.合适的线程模型</strong></h2><p>redis快的原因还有一个是因为使用了合适的线程模型：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard8.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard8.png" srcset="data:image/png;base64,666" alt="img"></p>
+<h3 id="4-1I-O多路复用模型"><a href="#4-1I-O多路复用模型" class="headerlink" title="4.1I/O多路复用模型"></a><strong>4.1I/O多路复用模型</strong></h3><p><strong>I/O</strong>：网络I/O</p>
+<p><strong>多路</strong>：多个TCP连接</p>
+<p><strong>复用</strong>：共用一个线程或进程</p>
+<p>生产环境中的使用，通常是多个客户端连接redis，然后各自发送命令至redis服务器，最后服务端处理这些请求返回结果。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard9.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard9.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>应对大量的请求，redis中使用I/O多路复用程序同时监听多个套接字，并将这些事件推送到队列里，然后逐个执行。最终将结果返回给客户端。</p>
+<h3 id="4-2避免上下文切换"><a href="#4-2避免上下文切换" class="headerlink" title="4.2避免上下文切换"></a><strong>4.2避免上下文切换</strong></h3><p><strong>redis是单线程，单线程的redis为什么会快？</strong></p>
+<p>因为多线程在执行的过程中需要进行CPU的上下文切换，这个操作比较耗时。redis是基于内存实现，对于内存来说，没有上下文切换效率就是最高的。多次读写都在一个CPU上，对于内存来说就是最佳方案。</p>
+<h3 id="4-3单线程模型"><a href="#4-3单线程模型" class="headerlink" title="4.3单线程模型"></a><strong>4.3单线程模型</strong></h3><p>redis中使用了reactor单线程模型</p>
+<p><img src="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard10.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/569378672/image@main/img/clipboard10.png" srcset="data:image/png;base64,666" alt="img"></p>
+<p>这张图里，接收到用户的请求后，全部推送到一个队列里，然后交给文件事件分派器，而它是单线程模型的工作方式。</p>
+<h2 id="5-总结"><a href="#5-总结" class="headerlink" title="5.总结"></a><strong>5.总结</strong></h2><h3 id="基于内存实现"><a href="#基于内存实现" class="headerlink" title="基于内存实现"></a><strong>基于内存实现</strong></h3><p>数据存储在内存里，减少了一些不必要的I/O操作，操作速率很快。</p>
+<h3 id="高效的数据结构"><a href="#高效的数据结构" class="headerlink" title="高效的数据结构"></a><strong>高效的数据结构</strong></h3><p>底层多种数据结构支持不同的数据类型，支持redis存储不同的数据。</p>
+<p>不同数据结构的设计，使得数据存储时间复杂度降到最低。</p>
+<h3 id="合理的数据编码"><a href="#合理的数据编码" class="headerlink" title="合理的数据编码"></a><strong>合理的数据编码</strong></h3><p>根据字符串的长度及元素的个数适配不同的编码格式。</p>
+<h3 id="合适的线程模型"><a href="#合适的线程模型" class="headerlink" title="合适的线程模型"></a><strong>合适的线程模型</strong></h3><p>I/O多路复用模型同时监听客户端连接。</p>
+<p>单线程在执行过程中不需要进行上下文切换，减少耗时。</p>
+
+  
+  
+    
+    <div class='footer'>
       
-        <div>
-          <a class='readmore' href='/2021/01/21/redis4/'>
-            Read More
-          </a>
+      
+      
+        <div class='copyright'>
+          <blockquote>
+            
+              
+                <p>博客内容遵循 署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0) 协议</p>
+
+              
+            
+              
+                <p>本文永久链接是：<a href=http://example.com/2021/01/21/redis2/>http://example.com/2021/01/21/redis2/</a></p>
+              
+            
+          </blockquote>
         </div>
+      
       
     </div>
   
+  
+    
 
+
+  <div class='article-meta' id="bottom">
+    <div class='new-meta-box'>
+      
+        
+          <div class="new-meta-item date" itemprop="dateUpdated" datetime="2021-01-21T10:44:39+08:00">
+  <a class='notlink'>
+    <i class="fas fa-edit fa-fw" aria-hidden="true"></i>
+    <p>更新于：Jan 21, 2021</p>
+  </a>
 </div>
 
-          </div>
         
       
         
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis3/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
+          
+
+        
+      
+        
+          
+  <div class="new-meta-item share -mob-share-list">
+  <div class="-mob-share-list share-body">
     
       
-        缓存穿透，缓存击穿，缓存雪崩解决方案缓存穿透缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层查询，失去缓存的意义。当流量大时，DB直接挂掉，有人用不存在的key频繁攻击，就会出现bug。
-解决方案有很多方法可以有效解决缓存穿透问题，最常见的则是采用布隆过滤器，将所有可能存在的数据...
+        <a class="-mob-share-qq" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://example.com/2021/01/21/redis2/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qq.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qq.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-qzone" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=http://example.com/2021/01/21/redis2/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qzone.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/qzone.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+        <a class="-mob-share-weibo" title="" rel="external nofollow noopener noreferrer noopener"
+          
+          target="_blank" href="http://service.weibo.com/share/share.php?url=http://example.com/2021/01/21/redis2/&title= - 刘昶的博客&summary="
+          
+          >
+          
+            <img src="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/weibo.png" class="lazyload" data-srcset="https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/logo/128/weibo.png" srcset="data:image/png;base64,666">
+          
+        </a>
+      
+    
+      
+    
       
     
   </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/21/redis3/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
 </div>
 
-          </div>
+
+
         
       
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/21/redis2/">
-        Jan 21, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        Redis
-1.基于内存实现redis是基于内存的数据库，与磁盘数据库相比，redis的读取不会受到磁盘I/O的限制。
-2.高效的数据结构redis中有多种数据类型，每种数据类型的底层都有一种或多种数据结构支持。
-
-2.1简单动态字符串(SDS)(1)字符串长度处理
-获取字符串长度不需要遍历整个字符串。
-
-(2)内存重新分配
-C语言涉及到修改字符串的时候会重新分配内存。修改越频繁，内存分配越...
-      
-    
+    </div>
   </div>
+
+
   
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-21</time>
-        
-      </div>
+  
+
+  
+    <div class="prev-next">
       
-        <div>
-          <a class='readmore' href='/2021/01/21/redis2/'>
-            Read More
-          </a>
-        </div>
+        <a class='prev' href='/2021/01/21/redis3/'>
+          <p class='title'><i class="fas fa-chevron-left" aria-hidden="true"></i></p>
+          <p class='content'>缓存穿透，缓存击穿，缓存雪崩解决方案缓存穿透缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求...</p>
+        </a>
+      
+      
+        <a class='next' href='/2021/01/20/redis1/'>
+          <p class='title'><i class="fas fa-chevron-right" aria-hidden="true"></i></p>
+          <p class='content'>redis面试题
+Redis持久化机制Redis是一个支持持久化的内存数据库，通过持久化机制把内存中的数据同步到硬盘文件来保证数据持久化。当Redis重启后通过把硬盘文件重新加载到内存，就能达到...</p>
+        </a>
       
     </div>
   
+</article>
 
+
+  
+
+  <article class="post white-box reveal shadow" id="comments">
+    <p ct><i class='fas fa-comments'></i> 评论</p>
+    
+    <div id="valine_container" class="valine_thread">
+  <i class="fas fa-cog fa-spin fa-fw fa-2x"></i>
 </div>
 
-          </div>
-        
-      
-        
-          <div class='post-wrapper'>
-            <div class="post post-v3 white-box reveal shadow">
-  
-  
-  
-  
-    
-    <h2 class="article-title" >
-      <a href="/2021/01/20/redis1/">
-        Jan 20, 2021
-      </a>
-    </h2>
-  
-  <div class='md'>
-    
-      
-        redis面试题
-Redis持久化机制Redis是一个支持持久化的内存数据库，通过持久化机制把内存中的数据同步到硬盘文件来保证数据持久化。当Redis重启后通过把硬盘文件重新加载到内存，就能达到恢复数据的目的。
-实现:单独创建fork()一个子进程，将当前父进程的数据库数据复制到子进程的内存中，然后由子进程写入到临时文件中，持久化的过程结束了，再用这个临时文件替换上次的快照文件，然后子进程退...
-      
-    
-  </div>
-  
-    <div class='meta-v3' line_style='solid'>
-      <div>
-        
-        <time>2021-01-20</time>
-        
-      </div>
-      
-        <div>
-          <a class='readmore' href='/2021/01/20/redis1/'>
-            Read More
-          </a>
-        </div>
-      
-    </div>
-  
-
-</div>
-
-          </div>
-        
-      
-    
-  </section>
-  
-    
-  
+  </article>
 
 
-	
+
+
+
+
 </div>
 <aside class='l_side'>
   
@@ -602,87 +604,28 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
     
     
 
-<section class="widget blogger shadow desktop mobile">
-  <div class='content'>
-    
-      
-        <a class='avatar flat-box rectangle' href='/about/'>
-          <img no-lazy src='https://cdn.jsdelivr.net/gh/volantis-x/cdn-org/blog/Logo-NavBar@3x.png'/>
-        </a>
-      
-    
-    
-      <div class='text'>
-        
-        
-        
-          <p><span id="jinrishici-sentence">刘昶的博客</span></p>
-          <script src="https://sdk.jinrishici.com/v2/browser/jinrishici.js" charset="utf-8"></script>
-        
-      </div>
-    
-    
-      <div class="social-wrapper">
-        
-          
-            <a href="/atom.xml"
-              class="social fas fa-rss flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="mailto:me@xxx.com"
-              class="social fas fa-envelope flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="https://github.com/volantis-x/"
-              class="social fab fa-github flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-          
-            <a href="/"
-              class="social fas fa-headphones-alt flat-btn"
-              target="_blank"
-              rel="external nofollow noopener noreferrer">
-              
-            </a>
-          
-        
-      </div>
-    
-  </div>
-</section>
 
-  
 
-  
+  <section class="widget toc-wrapper shadow desktop mobile" id="toc-div" >
     
+  <header>
     
+      <i class="fas fa-list fa-fw" aria-hidden="true"></i><span class='name'>本文目录</span>
+    
+  </header>
 
-  
 
-  
-    
-    
+    <div class='content'>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%9F%BA%E4%BA%8E%E5%86%85%E5%AD%98%E5%AE%9E%E7%8E%B0"><span class="toc-text">1.基于内存实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%AB%98%E6%95%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">2.高效的数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1%E7%AE%80%E5%8D%95%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2-SDS"><span class="toc-text">2.1简单动态字符串(SDS)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2%E5%8F%8C%E7%AB%AF%E9%93%BE%E8%A1%A8"><span class="toc-text">2.2双端链表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8"><span class="toc-text">2.3压缩列表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4%E5%AD%97%E5%85%B8"><span class="toc-text">2.4字典</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%90%88%E7%90%86%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BC%96%E7%A0%81"><span class="toc-text">3.合理的数据编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%90%88%E9%80%82%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">4.合适的线程模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1I-O%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E6%A8%A1%E5%9E%8B"><span class="toc-text">4.1I&#x2F;O多路复用模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2%E9%81%BF%E5%85%8D%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2"><span class="toc-text">4.2避免上下文切换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">4.3单线程模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%80%BB%E7%BB%93"><span class="toc-text">5.总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E5%86%85%E5%AD%98%E5%AE%9E%E7%8E%B0"><span class="toc-text">基于内存实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E6%95%88%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">高效的数据结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E7%90%86%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BC%96%E7%A0%81"><span class="toc-text">合理的数据编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E9%80%82%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">合适的线程模型</span></a></li></ol></li></ol>
+    </div>
+  </section>
 
-  
 
   
 
 
 </aside>
+
 
 
         
@@ -699,7 +642,7 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
 
   var l_header=document.getElementById("l_header");
   
-  l_header.classList.remove("show");
+  l_header.classList.add("show");
   
 </script>
 

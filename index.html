@@ -393,6 +393,12 @@
         
           
         
+          
+        
+          
+        
+          
+        
       
     
     
@@ -406,7 +412,148 @@
   
     
     <h2 class="article-title" >
-      <a href="/2021/01/20/redis/">
+      <a href="/2021/01/21/redis4/">
+        Jan 21, 2021
+      </a>
+    </h2>
+  
+  <div class='md'>
+    
+      
+        Redis单线程与多线程
+1.Reactor模式1.1传统阻塞IO模型在传统阻塞IO模型中，由一个独立的 Acceptor 线程来监听客户端的连接，每当有客户端请求过来时，它就会为客户端分配一个新的线程来进行处理。当同时有多个请求过来，服务端对应的就会分配相应数量的线程。这就会导致CPU频繁切换，浪费资源。
+
+有的连接请求过来不做任何事情，但服务端还会分配对应的线程，这样就会造成不必要的线程...
+      
+    
+  </div>
+  
+    <div class='meta-v3' line_style='solid'>
+      <div>
+        
+        <time>2021-01-21</time>
+        
+      </div>
+      
+        <div>
+          <a class='readmore' href='/2021/01/21/redis4/'>
+            Read More
+          </a>
+        </div>
+      
+    </div>
+  
+
+</div>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <div class="post post-v3 white-box reveal shadow">
+  
+  
+  
+  
+    
+    <h2 class="article-title" >
+      <a href="/2021/01/21/redis3/">
+        Jan 21, 2021
+      </a>
+    </h2>
+  
+  <div class='md'>
+    
+      
+        缓存穿透，缓存击穿，缓存雪崩解决方案缓存穿透缓存穿透是指查询一个一定不存在的数据，由于缓存是不命中时被动写，并且出于容错考虑，如果从存储层查不到数据则不写入缓存，这将导致这个不存在的数据每次请求都要到存储层查询，失去缓存的意义。当流量大时，DB直接挂掉，有人用不存在的key频繁攻击，就会出现bug。
+解决方案有很多方法可以有效解决缓存穿透问题，最常见的则是采用布隆过滤器，将所有可能存在的数据...
+      
+    
+  </div>
+  
+    <div class='meta-v3' line_style='solid'>
+      <div>
+        
+        <time>2021-01-21</time>
+        
+      </div>
+      
+        <div>
+          <a class='readmore' href='/2021/01/21/redis3/'>
+            Read More
+          </a>
+        </div>
+      
+    </div>
+  
+
+</div>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <div class="post post-v3 white-box reveal shadow">
+  
+  
+  
+  
+    
+    <h2 class="article-title" >
+      <a href="/2021/01/21/redis2/">
+        Jan 21, 2021
+      </a>
+    </h2>
+  
+  <div class='md'>
+    
+      
+        Redis
+1.基于内存实现redis是基于内存的数据库，与磁盘数据库相比，redis的读取不会受到磁盘I/O的限制。
+2.高效的数据结构redis中有多种数据类型，每种数据类型的底层都有一种或多种数据结构支持。
+
+2.1简单动态字符串(SDS)(1)字符串长度处理
+获取字符串长度不需要遍历整个字符串。
+
+(2)内存重新分配
+C语言涉及到修改字符串的时候会重新分配内存。修改越频繁，内存分配越...
+      
+    
+  </div>
+  
+    <div class='meta-v3' line_style='solid'>
+      <div>
+        
+        <time>2021-01-21</time>
+        
+      </div>
+      
+        <div>
+          <a class='readmore' href='/2021/01/21/redis2/'>
+            Read More
+          </a>
+        </div>
+      
+    </div>
+  
+
+</div>
+
+          </div>
+        
+      
+        
+          <div class='post-wrapper'>
+            <div class="post post-v3 white-box reveal shadow">
+  
+  
+  
+  
+    
+    <h2 class="article-title" >
+      <a href="/2021/01/20/redis1/">
         Jan 20, 2021
       </a>
     </h2>
@@ -429,7 +576,7 @@ Redis持久化机制Redis是一个支持持久化的内存数据库，通过持�
       </div>
       
         <div>
-          <a class='readmore' href='/2021/01/20/redis/'>
+          <a class='readmore' href='/2021/01/20/redis1/'>
             Read More
           </a>
         </div>
